@@ -37,10 +37,14 @@ public class Loptička extends GRobot
 	// kolízií.
 	public final Zoznam<KolíznaÚsečka> zoznamKolíznychÚsečiek = new Zoznam<>();
 
-	// Penetračné údaje:
+	// Penetračné údaje (používané na reset stavu loptičky v stave, kedy
+	// penetruje tehly bez odrážania):
 	public double poslednýSmer = 90, poslednéX = 0, poslednéY = 0;
 
-	private boolean penetračná;
+	private boolean penetračná; // (príznak penetračnej loptičky)
+
+
+	// Súvisiace s inicializáciou…
 
 	public Loptička()
 	{
@@ -61,6 +65,9 @@ public class Loptička extends GRobot
 		aktivuj(false);
 		penetračná(false);
 	}
+
+
+	// Súvisiace s vlastnosťou penetrácie…
 
 	public boolean penetračná() { return penetračná; }
 
@@ -87,6 +94,9 @@ public class Loptička extends GRobot
 		poslednéY = polohaY();
 	}
 
+
+	// Súvisiace s úpravami pri zobratí bonusov…
+
 	public void upravVeľkosť(int zmena)
 	{
 		double veľkosť = veľkosť() + 4 * zmena;
@@ -103,6 +113,9 @@ public class Loptička extends GRobot
 		rýchlosť(rýchlosť);
 	}
 
+
+	// Ostatné…
+
 	public void pripravKolíziu()
 	{
 		zoznamKolíznychÚsečiek.vymaž();
@@ -112,8 +125,6 @@ public class Loptička extends GRobot
 	{
 		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
 		veľkosť(veľkosť() * Ballbreaker.mierka);
-		// rozmery(šírka() * Ballbreaker.mierka, výška() * Ballbreaker.mierka);
-
 		krúžok();
 	}
 

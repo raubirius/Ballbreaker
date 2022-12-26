@@ -49,10 +49,12 @@ public class Bonus extends GRobot
 	}
 
 
+	// Pomocné atribúty bonusov (animačné, akčné)…
 	private Rad pulzy = new Rad(0, 8);
 	private int animuj = 0;
 	private Akcia akcia = null, kresli = null;
 
+	// Animácie bonusov:
 	private Akcia kreslenia[] = {
 		// 0 – delo
 		() -> {
@@ -150,9 +152,10 @@ public class Bonus extends GRobot
 		},
 	};
 
+	// Vykonanie akcie zobratia:
 	public void akcia() { if (null != akcia) akcia.vykonaj(); }
 
-	public Bonus(Poloha p)
+	public Bonus(Poloha p) // (konštruktor)
 	{
 		ohranič(Ballbreaker.šš / 2, Ballbreaker.vv / 2);
 
@@ -167,7 +170,7 @@ public class Bonus extends GRobot
 		aktivuj(false);
 	}
 
-	@Override public void kresliTvar()
+	@Override public void kresliTvar() // (kreslenie s animáciou)
 	{
 		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
 		veľkosť(veľkosť() * Ballbreaker.mierka);
@@ -180,10 +183,11 @@ public class Bonus extends GRobot
 			krúžok();
 	}
 
+
+	// Ostatné…
+
 	@Override public void mimoHraníc()
-	{
-		Ballbreaker.ballbreaker.deaktivujBonus(this);
-	}
+	{ Ballbreaker.ballbreaker.deaktivujBonus(this); }
 
 	@Override public void deaktivácia() { skry(); }
 	@Override public void aktivácia() { zobraz(); }

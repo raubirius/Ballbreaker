@@ -30,6 +30,8 @@ public class Strela extends GRobot
 	}
 
 
+	// Súvisiace s inicializáciou…
+
 	public Strela()
 	{
 		veľkosť(16);
@@ -44,6 +46,9 @@ public class Strela extends GRobot
 		zdvihniPero();
 		aktivuj(false);
 	}
+
+
+	// Ostatné…
 
 	@Override public void mimoHraníc()
 	{

@@ -7,58 +7,21 @@ import static knižnica.Svet.*;
 
 public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 {
-	// TEST:
-	/*
-	private final static GRobot kreslič = new GRobot()
-	{
-		@Override public void kresliTvar()
-		{
-			for (KolíznaÚsečka úsečka : úsečky)
-			{
-				if (null != úsečka.b1 && null != úsečka.b2)
-				{
-					if (úsečka.x1c > 0)
-					{
-						hrúbkaČiary(1.5);
-						--úsečka.x1c;
-						farba(tyrkysová);
-					}
-					else if (úsečka.x1c < 0)
-					{
-						hrúbkaČiary(2);
-						++úsečka.x1c;
-						farba(červená);
-					}
-					else
-					{
-						hrúbkaČiary(1);
-						farba(papierová);
-					}
-
-					skočNa(úsečka.b1);
-					choďNa(úsečka.b2);
-
-					if (úsečka.x1c < 0)
-					{
-						hrúbkaČiary(1.5);
-						farba(tyrkysová);
-						skočNa(úsečka.r1t);
-						choďNa(úsečka.r2t);
-						skočNa(úsečka.x1t);
-						choďNa(úsečka.x2t);
-					}
-				}
-			}
-		}
-	};
-	private final static Zoznam<KolíznaÚsečka> úsečky = new Zoznam<>();
-	*/
-
-
+	// Krajné body úsečky a kolízna akcia:
 	public Bod b1, b2;
 	public Akcia akcia = null;
 
+	// Interný parameter triedenia:
 	private double vzdialenosť = 0;
+
+	// Pomocné body získané pri príprave detekcie kolízií a používané počas
+	// nich:
+	private Bod r1 = null;
+	private Bod r2 = null;
+	private Bod x1 = null;
+
+
+	// Konštruktory:
 
 	public KolíznaÚsečka(double x1, double y1, double x2, double y2)
 	{
@@ -69,9 +32,6 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 	{
 		this.b1 = b1;
 		this.b2 = b2;
-
-		// TEST:
-		// úsečky.pridaj(this);
 	}
 
 	public KolíznaÚsečka()
@@ -80,17 +40,7 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 	}
 
 
-	// TODO:
-	private Bod r1 = null;
-	private Bod r2 = null;
-	private Bod x1 = null;
-
-	// TEST:
-	/* private int x1c = 0;
-	private Bod r1t = null;
-	private Bod r2t = null;
-	private Bod x1t = null;
-	private Bod x2t = null; */
+	// Metódy:
 
 	public void pripravKolíziu(Loptička l)
 	{
@@ -104,9 +54,6 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 			// touto kolíznou úsečkou a aktuálnou dráhou loptičky:
 			vzdialenosť = vzdialenosť(l, x1);
 			l.zoznamKolíznychÚsečiek.pridaj(this);
-
-			// TEST:
-			// x1c = 10;
 		}
 	}
 
@@ -125,13 +72,6 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 			l.skočNa(x2);
 
 			if (null != akcia) akcia.vykonaj();
-
-			// TEST:
-			/* x1c = -10;
-			r1t = r1;
-			r2t = r2;
-			x1t = x1;
-			x2t = l.poloha(); */
 
 			return true;
 		}

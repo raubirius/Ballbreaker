@@ -5,7 +5,17 @@ import static knižnica.Kláves.*;
 import static knižnica.Svet.*;
 import static knižnica.ÚdajeUdalostí.*;
 
-// TODO
+// Prvá fáza vývoja:
+// ✓ návrh a výroba základných objektov (tehly, loptičky) a tried (hlavná
+//   trieda, rodičovská trieda kolíznych objektov…)
+// ~ kolízie objektov (stále nastávajú úniky – všimol som si, že podobné sa
+//   diali aj v jednej implementácii, ktorú som hrával mnoho rokov dozadu;
+//   tým to nechcem ospravedlňovať; len, že to nie je také ľahké)
+// ✓ zoznamy objektov
+// • (neustála revízia a testovanie)
+// ———
+// Druhá fáza vývoja:
+// ✓ rozšírenie o ďalšie objekty a triedy (plošina, strela, bonus…)
 // ✓ škálovateľnosť grafiky podľa okna
 // ✓ penetračná loptička
 // ✓ delo (prídavok plošiny)
@@ -14,6 +24,8 @@ import static knižnica.ÚdajeUdalostí.*;
 // ✓ zmena rýchlosti loptičiek
 // ✓ bonusy (pridanie loptičiek, zmena veľkosti plošiny, zmena veľkosti
 //   loptičiek, zmena rýchlosti loptičiek, penetračné loptičky, delo)
+// ———
+// TODO – na dokončenie:
 // • steny
 // • skóre
 // • výhra/prehra
@@ -21,6 +33,7 @@ import static knižnica.ÚdajeUdalostí.*;
 
 public class Ballbreaker extends GRobot
 {
+	// Aktívne objekty hry:
 	public final static Zoznam<Tehla> tehly = new Zoznam<>();
 	private final Zoznam<Loptička> loptičky = new Zoznam<>();
 	private final Zoznam<Strela> strely = new Zoznam<>();
@@ -59,45 +72,27 @@ public class Ballbreaker extends GRobot
 		kú4.akcia = spodnýOkraj;
 	}
 
-	public static Ballbreaker ballbreaker;
+	// Hlavná inštancia hry a globálna mierka:
+	public static Ballbreaker ballbreaker; // (keby mohla byť final, bola by
+		// final, ale nedá sa to urobiť, pretože túto inštanciu je nevyhnutné
+		// inicializovať čo najskôr (v podstate je to druhý príkaz
+		// konštruktora), inak by vznikali chyby počas inicializácie;
+		// keďže zároveň musí byť statická, kompilátor nedokáže rozpoznať,
+		// že priradenie by sa vykonalo len raz (nemá tú garanciu), tak
+		// vyhlasuje pri príznaku final chybu)
 	public static double mierka = 1.0;
+
+
+	// Súvisiace s inicializáciou…
 
 	private Ballbreaker()
 	{
 		super(šírkaZariadenia(), výškaZariadenia());
+		ballbreaker = this;
+
 		farbaPozadia(antracitová);
 		farba(tmavomodrá);
-		ballbreaker = this;
 		reset();
-	}
-
-	public Loptička nováLoptička()
-	{
-		Loptička loptička = Loptička.dajLoptičku();
-		loptička.skočNa(plošina.polohaX(), 0);
-		loptička.smer(90);
-		loptička.odskoč();
-		loptička.smer(náhodnéCeléČíslo(260, 280));
-		loptičky.pridaj(loptička);
-		return loptička;
-	}
-
-	public Strela nováStrela()
-	{
-		Strela strela = Strela.dajStrelu();
-		strela.skočNa(plošina);
-		strela.smer(plošina);
-		strela.skoč();
-		strela.vľavo(náhodnéCeléČíslo(-3, 3));
-		strely.pridaj(strela);
-		return strela;
-	}
-
-	public Bonus novýBonus(Poloha p, int n)
-	{
-		Bonus bonus = Bonus.dajBonus(p, n);
-		bonusy.pridaj(bonus);
-		return bonus;
 	}
 
 	public void reset()
@@ -137,6 +132,39 @@ public class Ballbreaker extends GRobot
 		}
 	}
 
+
+	// Tvorba objektov hry – používané pri inicializácii a bonusoch…
+
+	public Loptička nováLoptička()
+	{
+		Loptička loptička = Loptička.dajLoptičku();
+		loptička.skočNa(plošina.polohaX(), 0);
+		loptička.smer(90);
+		loptička.odskoč();
+		loptička.smer(náhodnéCeléČíslo(260, 280));
+		loptičky.pridaj(loptička);
+		return loptička;
+	}
+
+	public Strela nováStrela()
+	{
+		Strela strela = Strela.dajStrelu();
+		strela.skočNa(plošina);
+		strela.smer(plošina);
+		strela.skoč();
+		strela.vľavo(náhodnéCeléČíslo(-3, 3));
+		strely.pridaj(strela);
+		return strela;
+	}
+
+	public Bonus novýBonus(Poloha p, int n)
+	{
+		Bonus bonus = Bonus.dajBonus(p, n);
+		bonusy.pridaj(bonus);
+		return bonus;
+	}
+
+	// Akcie pri zobratí bonusov:
 	public Akcia akcieBonusov[] = {
 		// 0 – delo
 		() -> plošina.máDelo = true,
@@ -283,6 +311,9 @@ public class Ballbreaker extends GRobot
 		spustiČasovač();
 	}
 
+
+	// Obsluha udalostí…
+
 	@Override public void zmenaVeľkostiOkna()
 	{
 		if (Svet.zobrazený())
@@ -309,7 +340,7 @@ public class Ballbreaker extends GRobot
 		{
 		case VĽAVO: plošina.zrýchleniePosunu(-2.5); break;
 		case VPRAVO: plošina.zrýchleniePosunu(2.5); break;
-		case ENTER: čít(); break;
+		case ENTER: čít(); break; // TESTY
 		}
 	}
 
@@ -324,7 +355,7 @@ public class Ballbreaker extends GRobot
 		case MEDZERA:
 			if (plošina.máDelo)
 			{
-				// TODO – obmedziť maximálny počet striel
+				// TODO – obmedziť maximálny počet striel(?)
 				nováStrela();
 			}
 			break;
@@ -374,13 +405,11 @@ public class Ballbreaker extends GRobot
 				// že je loptička v ich vnútri:
 				if (lx >= x1v && lx <= x2v && ly >= y1v && ly <= y2v)
 				{
-					// testovanáLoptička.farba(čierna); // TEST
 					kú1.pripravKolíziu(testovanáLoptička);
 					kú2.pripravKolíziu(testovanáLoptička);
 					kú3.pripravKolíziu(testovanáLoptička);
 					kú4.pripravKolíziu(testovanáLoptička);
 				}
-				// else testovanáLoptička.farba(červená); // TEST
 
 				plošina.pripravKolíziu(testovanáLoptička);
 
@@ -399,10 +428,6 @@ public class Ballbreaker extends GRobot
 						break;
 					}
 			}
-
-			// DEBUG:
-			// if (opakuj && testovanáLoptička.aktívny()) System.err.println(
-			// 	"Prekročený limit hĺbky detekcie kolízií!");
 		}
 
 		for (int i = 0; i < loptičky.veľkosť(); ++i)
@@ -449,6 +474,9 @@ public class Ballbreaker extends GRobot
 		if (neboloPrekreslené()) prekresli();
 	}
 
+
+	// Deaktivácia objektov (ich vyradenie z hry) a ďalšie akcie…
+
 	public void deaktivujStrelu(Strela strela)
 	{
 		strela.deaktivuj(false);
@@ -472,6 +500,8 @@ public class Ballbreaker extends GRobot
 			testovanáLoptička.vpravo(rýchlosťPosunu);
 	}
 
+
+	// Hlavná metóda…
 	public static void main(String[] args)
 	{
 		použiKonfiguráciu("Ballbreaker.cfg"); Svet.skry(); nekresli();

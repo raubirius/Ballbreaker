@@ -4,8 +4,10 @@ import static knižnica.Svet.náhodnéReálneČíslo;
 
 public class Tehla extends KolíznyBlok
 {
+	// Farby tehiel podľa počtu úderov, ktoré vydržia:
 	private final static Farba[] farby = {tmavočervená, červená,
 		tmavopurpurová, tmavohnedá, tmavooranžová};
+
 
 	// Mechanizmus automatickej recyklácie tehiel:
 
@@ -38,17 +40,11 @@ public class Tehla extends KolíznyBlok
 	}
 
 
-	/*private class Akcia implements KolíznaAkcia
-	{
-		public void vykonaj()
-		{
-			udri();
-		}
-	}*/
+	private Akcia akcia = () -> udri(); // (kolízna akcia)
+	private int úderov = -1; // (koľko vydrží úderov)
 
-	private Akcia akcia = () -> udri();
 
-	private int úderov = -1;
+	// Súvisiace s inicializáciou…
 
 	public Tehla()
 	{
@@ -61,6 +57,9 @@ public class Tehla extends KolíznyBlok
 		for (int i = 0; i < 12; ++i)
 			kolíznaÚsečka[i].akcia = akcia;
 	}
+
+
+	// Súvisiace s údermi do tehly…
 
 	private void upravParametrePodľaÚderov()
 	{
@@ -76,6 +75,8 @@ public class Tehla extends KolíznyBlok
 		}
 	}
 
+	// Táto metóda generuje nerovnomerné rozloženie a používa sa na
+	// generovanie bonusov – 0 je najvzácnejší, 8 najbežnejší.
 	private static int dajNáhodnéČíslo(int n)
 	{
 		double p = Math.abs(((1 + náhodnéReálneČíslo()) *
@@ -101,6 +102,9 @@ public class Tehla extends KolíznyBlok
 			deaktivuj(false);
 		}
 	}
+
+
+	// Ostatné…
 
 	@Override public void kresliTvar()
 	{
