@@ -3,6 +3,8 @@ import knižnica.*;
 
 public class Loptička extends GRobot
 {
+	// Mechanizmus automatickej recyklácie loptičiek:
+
 	private final static Zoznam<Loptička> loptičky = new Zoznam<>();
 
 	public static void reset()
@@ -28,23 +30,17 @@ public class Loptička extends GRobot
 	}
 
 
+	// Tento verejný zoznam je viacnásobne používaný pri každom tiku časovača.
+	// Je čistený pred každým cyklom detekcie kolízií, ktorých môže byť
+	// v rámci jedného tiku viac. Potom ho prípravné metódy detekcie kolízií
+	// automaticky plnia. Následne je zotriedený a nakoniec sú vykonané testy
+	// kolízií.
 	public final Zoznam<KolíznaÚsečka> zoznamKolíznychÚsečiek = new Zoznam<>();
 
 	public Loptička()
 	{
 		veľkosť(18);
-
 		ohranič();
-
-		// Toto bolo upravené, aby to spolupracovalo s metódou mimoHraníc:
-		/*ohranič(Svet.šírka() / 2 - veľkosť(),
-			Svet.výška() / 2 - veľkosť(), ODRAZ); */
-
-		// Poznámka: Spoľahlivejšie by bolo, keby aj kolízie so stenami sveta
-		// (hracieho plátna) boli implementované prostredníctvom kolíznych
-		// úsečiek (a nie cez ohraničenie), lebo pri tejto implementácii je
-		// opäť riziko vzniku „bugov“. Totiž: mechanizmus ohraničenia funguje
-		// samostatne a neberie do úvahy opravu, ktorá bola vykonaná.
 
 		zdvihniPero();
 		najväčšiaRýchlosť(20);
@@ -61,15 +57,4 @@ public class Loptička extends GRobot
 	{
 		krúžok();
 	}
-
-	// Táto metóda bola prevzatá z dokumentácie
-	// (http://localhost/horvath/GRobot/GRobot#mimoHran%C3%ADc-Bod:A-double-):
-	/* @Override public boolean mimoHraníc(Bod[] poleBodov, double uhol)
-	{
-		Bod priesečník = Svet.priesečníkÚsečiek(poleBodov[0],
-			poloha(), poleBodov[2], poleBodov[3]);
-		if (null != priesečník)
-			smer(Svet.smer(priesečník, poleBodov[1]));
-		return true;
-	} */
 }

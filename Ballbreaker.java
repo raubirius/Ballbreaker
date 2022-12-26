@@ -25,10 +25,17 @@ public class Ballbreaker extends GRobot
 	{
 		super(500, 400);
 
+		// Hranice hracej plochy:
 		x1 = najmenšieX();
 		x2 = najväčšieX();
 		y1 = najmenšieY();
 		y2 = najväčšieY();
+
+		// TEST:
+		/*x1 += 10;
+		x2 -= 10;
+		y1 += 10;
+		y2 -= 10;*/
 
 		reset();
 	}
@@ -37,7 +44,7 @@ public class Ballbreaker extends GRobot
 	{
 		Loptička.reset();
 		loptičky.vymaž();
-		for (int i = 0; i < 1; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
 			Loptička loptička = Loptička.dajLoptičku();
 			loptička.skočNa(stred);
@@ -51,13 +58,14 @@ public class Ballbreaker extends GRobot
 		for (int i = 0; i < 5; i += 1)
 		{
 			Tehla tehla = Tehla.dajTehlu();
-			tehla.skočNa(-170 + i * 85, 140);
+			tehla.skočNa(-170 + i * 85, 140 - (45 * (i % 2)));
 			tehly.pridaj(tehla);
 		}
 	}
 
 	@Override public void kresliTvar()
 	{
+		// TODO: skóre a podobne
 	}
 
 	@Override public void klik()
@@ -65,7 +73,11 @@ public class Ballbreaker extends GRobot
 		// TESTY
 		if (ÚdajeUdalostí.tlačidloMyši(ĽAVÉ))
 		{
-			// (prázdne)
+			for (Loptička loptička : loptičky)
+			{
+				loptička.skočNaMyš();
+				break;
+			}
 		}
 		else
 		{
@@ -83,17 +95,26 @@ public class Ballbreaker extends GRobot
 		{
 			double v = loptička.veľkosť();
 
-			kú1.b1.poloha(x1 + v, y1);
-			kú1.b2.poloha(x1 + v, y2);
+			// Výpočet súradníc, ktoré sú považované za vnútrajšok plochy pre
+			// túto loptičku – využíva sa to nielen na prípravu úsečiek, ale
+			// aj na ich zaradenie do detekcie v ďalšom cykle nižšie:
+			double x1v = x1 + v;
+			double x2v = x2 - v;
+			double y1v = y1 + v;
+			double y2v = y2 - v;
 
-			kú2.b1.poloha(x2 - v, y1);
-			kú2.b2.poloha(x2 - v, y2);
+			// Príprava kolíznych úsečiek okrajov hracej plochy:
+			kú1.b1.poloha(x1v, y1);
+			kú1.b2.poloha(x1v, y2);
 
-			kú3.b1.poloha(x1, y2 - v);
-			kú3.b2.poloha(x2, y2 - v);
+			kú2.b1.poloha(x2v, y1);
+			kú2.b2.poloha(x2v, y2);
 
-			kú4.b1.poloha(x1, y1 + v);
-			kú4.b2.poloha(x2, y1 + v);
+			kú3.b1.poloha(x1, y2v);
+			kú3.b2.poloha(x2, y2v);
+
+			kú4.b1.poloha(x1, y1v);
+			kú4.b2.poloha(x2, y1v);
 
 			boolean opakuj = true;
 
@@ -102,17 +123,26 @@ public class Ballbreaker extends GRobot
 				opakuj = false;
 
 				loptička.pripravKolíziu();
+				double lx = loptička.poslednáPolohaX();
+				double ly = loptička.poslednáPolohaY();
 
-				// loptička.zoznamKolíznychÚsečiek.pridaj(kú1); // nope
-				// …
-				kú1.pripravKolíziu(loptička);
-				kú2.pripravKolíziu(loptička);
-				kú3.pripravKolíziu(loptička);
-				kú4.pripravKolíziu(loptička);
+				// Tie to hranice sú do detekcie pridané len v prípade,
+				// že je loptička v ich vnútri:
+				if (lx >= x1v && lx <= x2v && ly >= y1v && ly <= y2v)
+				{
+					loptička.farba(čierna);
+					kú1.pripravKolíziu(loptička);
+					kú2.pripravKolíziu(loptička);
+					kú3.pripravKolíziu(loptička);
+					kú4.pripravKolíziu(loptička);
+				}
+				else loptička.farba(červená);
 
 				for (Tehla tehla : tehly)
 					tehla.pripravKolíziu(loptička);
 
+				// Triedenie kolíznych úsečiek podľa vzdialenosti – pozri aj
+				// KolíznaÚsečka.compareTo:
 				Collections.sort(loptička.zoznamKolíznychÚsečiek);
 
 				for (KolíznaÚsečka kolíznaÚsečka :

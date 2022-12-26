@@ -8,6 +8,7 @@ import static knižnica.Svet.*;
 public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 {
 	// TEST:
+	/*
 	private final static GRobot kreslič = new GRobot()
 	{
 		@Override public void kresliTvar()
@@ -51,6 +52,7 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 		}
 	};
 	private final static Zoznam<KolíznaÚsečka> úsečky = new Zoznam<>();
+	*/
 
 
 	public Bod b1, b2;
@@ -58,8 +60,7 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 
 	private double vzdialenosť = 0;
 
-	public KolíznaÚsečka(double x1, double y1,
-		double x2, double y2)
+	public KolíznaÚsečka(double x1, double y1, double x2, double y2)
 	{
 		this(new Bod(x1, y1), new Bod(x2, y2));
 	}
@@ -70,7 +71,7 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 		this.b2 = b2;
 
 		// TEST:
-		úsečky.pridaj(this);
+		// úsečky.pridaj(this);
 	}
 
 	public KolíznaÚsečka()
@@ -80,16 +81,16 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 
 
 	// TODO:
-	Bod r1 = null;
-	Bod r2 = null;
-	Bod x1 = null;
+	private Bod r1 = null;
+	private Bod r2 = null;
+	private Bod x1 = null;
 
 	// TEST:
-	int x1c = 0;
-	Bod r1t = null;
-	Bod r2t = null;
-	Bod x1t = null;
-	Bod x2t = null;
+	/* private int x1c = 0;
+	private Bod r1t = null;
+	private Bod r2t = null;
+	private Bod x1t = null;
+	private Bod x2t = null; */
 
 	public void pripravKolíziu(Loptička l)
 	{
@@ -97,16 +98,15 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 		r2 = l.poloha();
 		x1 = priesečníkÚsečiek(b1, b2, r1, r2);
 
-		// vzdialenosť = vzdialenosťBoduOdÚsečky(l, b1, b2); // nope
-		// l.zoznamKolíznychÚsečiek.pridaj(this);
-
 		if (null != x1)
 		{
+			// Detekciu má zmysel vykonať len ak jestvuje priesečník medzi
+			// touto kolíznou úsečkou a aktuálnou dráhou loptičky:
 			vzdialenosť = vzdialenosť(l, x1);
 			l.zoznamKolíznychÚsečiek.pridaj(this);
 
 			// TEST:
-			x1c = 10;
+			// x1c = 10;
 		}
 	}
 
@@ -127,11 +127,11 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 			if (null != akcia) akcia.vykonaj();
 
 			// TEST:
-			x1c = -10;
+			/* x1c = -10;
 			r1t = r1;
 			r2t = r2;
 			x1t = x1;
-			x2t = l.poloha();
+			x2t = l.poloha(); */
 
 			return true;
 		}

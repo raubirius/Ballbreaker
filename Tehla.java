@@ -3,6 +3,8 @@ import knižnica.*;
 
 public class Tehla extends GRobot
 {
+	// Mechanizmus automatickej recyklácie tehiel:
+
 	private final static Zoznam<Tehla> tehly = new Zoznam<>();
 
 	public static void reset()
@@ -70,15 +72,10 @@ public class Tehla extends GRobot
 	}
 
 
-	// TEST
-	// (Kreslí tučnou čiarou tie tehly, ktoré sú v kolíznej zóne loptičky.)
-	private boolean bvkz = false; // (bkvz – bol v kolíznej zóne)
-
 	public void pripravKolíziu(Loptička l)
 	{
 		// Spracujú sa len tie kolízie, ktoré sú v rámci kolíznej zóny:
-		// if (!jeVKolíznejZóne(l)) return;
-		if (!(bvkz = jeVKolíznejZóne(l))) return; // TEST
+		if (!jeVKolíznejZóne(l)) return;
 
 
 		double veľkosť = l.veľkosť();
@@ -90,6 +87,8 @@ public class Tehla extends GRobot
 		double smer1 = smer + 90;
 		double smer2 = smer - 90;
 
+
+		// Príprava kolíznych úsečiek tejto tehly voči zadanej loptičke:
 
 		kolíznyBod[1].poloha(this);
 		kolíznyBod[1].posuňVSmere(smer, výška + veľkosť);
@@ -145,13 +144,28 @@ public class Tehla extends GRobot
 		kolíznyBod[6].posuňVSmere(smer - 135, veľkosť);
 
 
-		for (int i = 0; i < 12; ++i) kolíznaÚsečka[i].pripravKolíziu(l);
+		double lx = l.poslednáPolohaX();
+		double ly = l.poslednáPolohaY();
+		double tx = polohaX();
+		double ty = polohaY();
+
+		for (int i = 0; i < 12; ++i)
+			// Kolíziu s úsečkou budeme detegovať len v prípade, že jestvuje
+			// priesečník medzi ňou samotnou a spojnicou medzi tehlou
+			// a poslednou polohou loptičky (tým dosiahneme detegovanie len
+			// tých loptičiek, ktoré sú zvonka tehly; keby sme to isté robili
+			// tak, že by sme namiesto poslednej polohy loptičky použili jej
+			// aktuálnu polohu, tak by sa efekt obrátil – loptička by vedela
+			// vojsť dnu do tehly, ale mala by problém z nej vyjsť):
+			if (null != Svet.priesečníkÚsečiek(lx, ly, tx, ty,
+				kolíznaÚsečka[i].b1.polohaX(), kolíznaÚsečka[i].b1.polohaY(),
+				kolíznaÚsečka[i].b2.polohaX(), kolíznaÚsečka[i].b2.polohaY()))
+				kolíznaÚsečka[i].pripravKolíziu(l);
 	}
 
 
 	@Override public void kresliTvar()
 	{
-		if (bvkz) hrúbkaČiary(3); // TEST
 		obdĺžnik();
 	}
 }
