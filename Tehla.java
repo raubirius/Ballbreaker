@@ -1,5 +1,6 @@
 
 import knižnica.*;
+import static knižnica.Svet.náhodnéReálneČíslo;
 
 public class Tehla extends KolíznyBlok
 {
@@ -37,13 +38,15 @@ public class Tehla extends KolíznyBlok
 	}
 
 
-	private class Akcia implements KolíznaAkcia
+	/*private class Akcia implements KolíznaAkcia
 	{
 		public void vykonaj()
 		{
 			udri();
 		}
-	}
+	}*/
+
+	private Akcia akcia = () -> udri();
 
 	private int úderov = -1;
 
@@ -55,7 +58,6 @@ public class Tehla extends KolíznyBlok
 		pomer(1.8);
 		zaoblenie(16);
 
-		Akcia akcia = new Akcia();
 		for (int i = 0; i < 12; ++i)
 			kolíznaÚsečka[i].akcia = akcia;
 	}
@@ -74,6 +76,13 @@ public class Tehla extends KolíznyBlok
 		}
 	}
 
+	private static int dajNáhodnéČíslo(int n)
+	{
+		double p = Math.abs(((1 + náhodnéReálneČíslo()) *
+			(1 + náhodnéReálneČíslo())) - 2) / 2;
+		return n - (int)(n * p) - 1;
+	}
+
 	public void udri()
 	{
 		Ballbreaker.ballbreaker.overPenetračnú();
@@ -85,6 +94,9 @@ public class Tehla extends KolíznyBlok
 		}
 		else
 		{
+			if (náhodnéReálneČíslo() > 0.5)
+				Ballbreaker.ballbreaker.novýBonus(this, dajNáhodnéČíslo(9));
+
 			Ballbreaker.tehly.odober(this);
 			deaktivuj(false);
 		}

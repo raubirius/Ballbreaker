@@ -70,6 +70,39 @@ public class Loptička extends GRobot
 		farba(penetračná ? tmavotyrkysová : tmavožltá);
 	}
 
+	public void penetruj()
+	{
+		if (penetračná)
+		{
+			smer(poslednýSmer);
+			poloha(poslednéX, poslednéY);
+			dopredu();
+		}
+	}
+
+	public void uložPoslendé()
+	{
+		poslednýSmer = smer();
+		poslednéX = polohaX();
+		poslednéY = polohaY();
+	}
+
+	public void upravVeľkosť(int zmena)
+	{
+		double veľkosť = veľkosť() + 4 * zmena;
+		if (veľkosť < 8) veľkosť = 8; else
+		if (veľkosť > 20) veľkosť = 20;
+		veľkosť(veľkosť);
+	}
+
+	public void upravRýchlosť(int zmena)
+	{
+		double rýchlosť = rýchlosť() + 4 * zmena;
+		if (rýchlosť < 4) rýchlosť = 4; else
+		if (rýchlosť > 20) rýchlosť = 20;
+		rýchlosť(rýchlosť);
+	}
+
 	public void pripravKolíziu()
 	{
 		zoznamKolíznychÚsečiek.vymaž();

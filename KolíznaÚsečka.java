@@ -56,7 +56,7 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 
 
 	public Bod b1, b2;
-	public KolíznaAkcia akcia = null;
+	public Akcia akcia = null;
 
 	private double vzdialenosť = 0;
 

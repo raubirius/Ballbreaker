@@ -8,8 +8,11 @@ import static knižnica.ÚdajeUdalostí.*;
 // TODO
 // ✓ škálovateľnosť grafiky podľa okna
 // ✓ penetračná loptička
-// • delo (prídavok plošiny)
-// • bonusy (pridanie loptičiek, zmena veľkosti plošiny, zmena veľkosti
+// ✓ delo (prídavok plošiny)
+// ✓ zmena veľkosti plošiny
+// ✓ zmena veľkosti loptičiek
+// ✓ zmena rýchlosti loptičiek
+// ✓ bonusy (pridanie loptičiek, zmena veľkosti plošiny, zmena veľkosti
 //   loptičiek, zmena rýchlosti loptičiek, penetračné loptičky, delo)
 // • steny
 // • skóre
@@ -19,8 +22,9 @@ import static knižnica.ÚdajeUdalostí.*;
 public class Ballbreaker extends GRobot
 {
 	public final static Zoznam<Tehla> tehly = new Zoznam<>();
-
 	private final Zoznam<Loptička> loptičky = new Zoznam<>();
+	private final Zoznam<Strela> strely = new Zoznam<>();
+	private final Zoznam<Bonus> bonusy = new Zoznam<>();
 	private final Plošina plošina = new Plošina();
 
 	// Výpočtové rozmery hracej plochy:
@@ -47,7 +51,7 @@ public class Ballbreaker extends GRobot
 
 	// Akcia spodného okraja – deaktivuje loptičku, ktorá je uložená v atribúte
 	// testovanáLoptička:
-	private KolíznaAkcia spodnýOkraj = () ->
+	private Akcia spodnýOkraj = () ->
 	{
 		if (null != testovanáLoptička)
 			testovanáLoptička.deaktivuj(false);
@@ -70,16 +74,41 @@ public class Ballbreaker extends GRobot
 	public Loptička nováLoptička()
 	{
 		Loptička loptička = Loptička.dajLoptičku();
-		loptička.skočNa(stred);
+		loptička.skočNa(plošina.polohaX(), 0);
+		loptička.smer(90);
 		loptička.odskoč();
 		loptička.smer(náhodnéCeléČíslo(260, 280));
 		loptičky.pridaj(loptička);
 		return loptička;
 	}
 
+	public Strela nováStrela()
+	{
+		Strela strela = Strela.dajStrelu();
+		strela.skočNa(plošina);
+		strela.smer(plošina);
+		strela.skoč();
+		strela.vľavo(náhodnéCeléČíslo(-3, 3));
+		strely.pridaj(strela);
+		return strela;
+	}
+
+	public Bonus novýBonus(Poloha p, int n)
+	{
+		Bonus bonus = Bonus.dajBonus(p, n);
+		bonusy.pridaj(bonus);
+		return bonus;
+	}
+
 	public void reset()
 	{
 		plošina.reset();
+
+		Strela.reset();
+		strely.vymaž();
+
+		Bonus.reset();
+		bonusy.vymaž();
 
 		Loptička.reset();
 		loptičky.vymaž();
@@ -107,6 +136,50 @@ public class Ballbreaker extends GRobot
 			}
 		}
 	}
+
+	public Akcia akcieBonusov[] = {
+		// 0 – delo
+		() -> plošina.máDelo = true,
+
+		// 1 – zmeň všetky loptičky na penetračné
+		() -> {
+			for (Loptička loptička : loptičky)
+				loptička.penetračná(true);
+		},
+
+		// 2 – zmenši loptičky
+		() -> {
+			for (Loptička loptička : loptičky)
+				loptička.upravVeľkosť(-1);
+		},
+
+		// 3 – zrýchli loptičky
+		() -> {
+			for (Loptička loptička : loptičky)
+				loptička.upravRýchlosť(1);
+		},
+
+		// 4 – zmenši plošinu
+		() -> plošina.upravŠírku(-1),
+
+		// 5 – zväčši loptičky
+		() -> {
+			for (Loptička loptička : loptičky)
+				loptička.upravVeľkosť(1);
+		},
+
+		// 6 – spomaľ loptičky
+		() -> {
+			for (Loptička loptička : loptičky)
+				loptička.upravRýchlosť(-1);
+		},
+
+		// 7 – zväčši plošinu
+		() -> plošina.upravŠírku(1),
+
+		// 8 – nová loptička
+		() -> nováLoptička(),
+	};
 
 	private void čít()
 	{
@@ -144,12 +217,38 @@ public class Ballbreaker extends GRobot
 
 			switch (čít)
 			{
+			case "b0": case "b1": case "b2": case "b3": case "b4":
+			case "b5": case "b6": case "b7": case "b8":
+				int ktorý = Integer.parseInt(čít.substring(1));
+				novýBonus(stred, ktorý);
+				break;
+
 			case "d":
 				plošina.máDelo = pridaj;
 				break;
 
+			case "š":
+				plošina.upravŠírku(pridaj ? 1 : -1);
+				break;
+
 			case "l":
 				nováLoptička();
+				break;
+
+			case "ľ":
+				for (Loptička loptička : loptičky)
+				{
+					loptička.upravVeľkosť(pridaj ? 1 : -1);
+					if (ibaJedna) break;
+				}
+				break;
+
+			case "r":
+				for (Loptička loptička : loptičky)
+				{
+					loptička.upravRýchlosť(pridaj ? 1 : -1);
+					if (ibaJedna) break;
+				}
 				break;
 
 			case "p":
@@ -174,6 +273,10 @@ public class Ballbreaker extends GRobot
 					loptička.otočNaMyš();
 					if (ibaJedna) break;
 				}
+				break;
+
+			case "t":
+				reset();
 				break;
 			}
 		}
@@ -221,7 +324,8 @@ public class Ballbreaker extends GRobot
 		case MEDZERA:
 			if (plošina.máDelo)
 			{
-				// TODO
+				// TODO – obmedziť maximálny počet striel
+				nováStrela();
 			}
 			break;
 		}
@@ -309,25 +413,57 @@ public class Ballbreaker extends GRobot
 				loptičky.odober(loptička);
 				--i;
 			}
-			else
+			else loptička.uložPoslendé();
+		}
+
+		testovanáLoptička = null;
+
+		for (int i = 0; i < strely.veľkosť(); ++i)
+		{
+			Strela strela = strely.daj(i);
+
+			for (Tehla tehla : tehly)
 			{
-				loptička.poslednýSmer = loptička.smer();
-				loptička.poslednéX = loptička.polohaX();
-				loptička.poslednéY = loptička.polohaY();
+				if (tehla.bodVObdĺžniku(strela))
+				{
+					tehla.udri();
+					deaktivujStrelu(strela);
+					--i;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < bonusy.veľkosť(); ++i)
+		{
+			Bonus bonus = bonusy.daj(i);
+
+			if (plošina.bodVObdĺžniku(bonus))
+			{
+				bonus.akcia();
+				deaktivujBonus(bonus);
+				--i;
 			}
 		}
 
 		if (neboloPrekreslené()) prekresli();
 	}
 
+	public void deaktivujStrelu(Strela strela)
+	{
+		strela.deaktivuj(false);
+		strely.odober(strela);
+	}
+
+	public void deaktivujBonus(Bonus bonus)
+	{
+		bonus.deaktivuj(false);
+		bonusy.odober(bonus);
+	}
+
 	public void overPenetračnú()
 	{
-		if (null != testovanáLoptička && testovanáLoptička.penetračná())
-		{
-			testovanáLoptička.smer(testovanáLoptička.poslednýSmer);
-			testovanáLoptička.poloha(testovanáLoptička.poslednéX,
-				testovanáLoptička.poslednéY);
-		}
+		if (null != testovanáLoptička) testovanáLoptička.penetruj();
 	}
 
 	public void odchýľLoptičku(double rýchlosťPosunu)
