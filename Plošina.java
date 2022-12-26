@@ -4,10 +4,13 @@ import static knižnica.Svet.*;
 
 public class Plošina extends KolíznyBlok
 {
+	public boolean máDelo = false;
+
 	public Plošina()
 	{
 		veľkosť(12);
 		zaoblenie(20);
+		hrúbkaČiary(2);
 		// reset();
 	}
 
@@ -21,6 +24,8 @@ public class Plošina extends KolíznyBlok
 
 	public void reset()
 	{
+		máDelo = false;
+
 		skočNa(0, 0);
 		pomer(3.8);
 
@@ -37,5 +42,18 @@ public class Plošina extends KolíznyBlok
 		skočNa(0, Ballbreaker.y1 + 1.4 * veľkosť());
 		najväčšiaRýchlosťPosunu(25);
 		aktivuj(false);
+	}
+
+	@Override public void kresliTvar()
+	{
+		super.kresliTvar();
+		if (máDelo)
+		{
+			hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
+			farba(čierna);
+			kresliObdĺžnik();
+			skoč(veľkosť() * Ballbreaker.mierka * 0.75);
+			kruh(veľkosť() * Ballbreaker.mierka * 0.5);
+		}
 	}
 }

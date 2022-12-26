@@ -62,9 +62,16 @@ public class Tehla extends KolíznyBlok
 
 	private void upravParametrePodľaÚderov()
 	{
-		farba(farby[úderov % farby.length]);
-		if (úderov >= farby.length)
+		if (úderov >= 0)
+		{
+			farba(farby[úderov % farby.length]);
 			hrúbkaČiary(1.5 + (úderov / farby.length));
+		}
+		else
+		{
+			farba(farby[0]);
+			hrúbkaČiary(0.5);
+		}
 	}
 
 	public void udri()
@@ -88,6 +95,7 @@ public class Tehla extends KolíznyBlok
 		super.kresliTvar();
 		if (úderov >= farby.length)
 		{
+			hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
 			farba(čierna);
 			kresliObdĺžnik();
 		}

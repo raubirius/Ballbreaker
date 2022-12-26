@@ -37,7 +37,8 @@ public class Loptička extends GRobot
 	// kolízií.
 	public final Zoznam<KolíznaÚsečka> zoznamKolíznychÚsečiek = new Zoznam<>();
 
-	public double poslednýSmer = 90;
+	// Penetračné údaje:
+	public double poslednýSmer = 90, poslednéX = 0, poslednéY = 0;
 
 	private boolean penetračná;
 
@@ -74,7 +75,15 @@ public class Loptička extends GRobot
 		zoznamKolíznychÚsečiek.vymaž();
 	}
 
-	@Override public void kresliTvar() { krúžok(); }
+	@Override public void kresliTvar()
+	{
+		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
+		veľkosť(veľkosť() * Ballbreaker.mierka);
+		// rozmery(šírka() * Ballbreaker.mierka, výška() * Ballbreaker.mierka);
+
+		krúžok();
+	}
+
 	@Override public void deaktivácia() { skry(); }
 	@Override public void aktivácia() { zobraz(); }
 }

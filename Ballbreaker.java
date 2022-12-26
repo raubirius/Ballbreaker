@@ -6,7 +6,7 @@ import static knižnica.Svet.*;
 import static knižnica.ÚdajeUdalostí.*;
 
 // TODO
-// • škálovateľnosť grafiky podľa okna
+// ✓ škálovateľnosť grafiky podľa okna
 // ✓ penetračná loptička
 // • delo (prídavok plošiny)
 // • bonusy (pridanie loptičiek, zmena veľkosti plošiny, zmena veľkosti
@@ -24,14 +24,14 @@ public class Ballbreaker extends GRobot
 	private final Plošina plošina = new Plošina();
 
 	// Výpočtové rozmery hracej plochy:
-	public final static double šš = 600; // šírka
+	public final static double šš = 800; // šírka
 	public final static double vv = 500; // výška
 
 	// Výpočtové hranice hracej plochy:
-	public final static double x1 = -300; // najmenšie x
-	public final static double x2 =  299; // najväčšie x
-	public final static double y1 = -249; // najmenšie y
-	public final static double y2 =  250; // najväčšie y
+	public final static double x1 =  -šš / 2;      // najmenšie x
+	public final static double x2 =  (šš / 2) - 1; // najväčšie x
+	public final static double y1 = (-vv / 2) + 1; // najmenšie y
+	public final static double y2 =   vv / 2;      // najväčšie y
 
 	// Kolízne úsečky okrajov obrazovky:
 	private final KolíznaÚsečka
@@ -56,14 +56,13 @@ public class Ballbreaker extends GRobot
 	}
 
 	public static Ballbreaker ballbreaker;
+	public static double mierka = 1.0;
 
 	private Ballbreaker()
 	{
 		super(šírkaZariadenia(), výškaZariadenia());
-
-		// TEST:
-		farba(snehová); obdĺžnik(300, 250);
-
+		farbaPozadia(antracitová);
+		farba(tmavomodrá);
 		ballbreaker = this;
 		reset();
 	}
@@ -80,8 +79,6 @@ public class Ballbreaker extends GRobot
 
 	public void reset()
 	{
-		farbaPozadia(tmavomodrá);
-
 		plošina.reset();
 
 		Loptička.reset();
@@ -91,15 +88,104 @@ public class Ballbreaker extends GRobot
 
 		Tehla.reset();
 		tehly.vymaž();
-		for (int i = 1; i <= 5; ++i)
-		for (int j = -4 + Math.abs(i % 2); j <= 4; ++j)
+
+		for (int y = 0; y < 5; ++y)
 		{
-			Tehla tehla = Tehla.dajTehlu(5 - i);
-			tehla.skočNa(
-				j * (6 + tehla.šírka()) -
-					(tehla.šírka() * Math.abs(i % 2)) / 2,
-				y2 - (6 + tehla.výška()) * i);
-			tehly.pridaj(tehla);
+			int yy = Math.abs(y % 2);
+			for (int x = -5 + yy; x <= 6; ++x)
+			{
+				Tehla tehla = Tehla.dajTehlu(4 - y);
+
+				double tš = tehla.šírka(), tv = tehla.výška();
+				double dx = -(tš / 2), dy = y2 - tv;
+				double mx = 6 + tš, my = 6 + tv;
+
+				tehla.skočNa(
+					dx + x * mx - (tš * yy) / 2,
+					dy - y * my);
+				tehly.pridaj(tehla);
+			}
+		}
+	}
+
+	private void čít()
+	{
+		zastavČasovač();
+		String čít = zadajReťazec("čít");
+		if (null != čít)
+		{
+			čít = čít.trim().toLowerCase();
+			boolean ibaJedna = true, pridaj = true;
+			{
+				boolean opakuj = true;
+				while (opakuj)
+				{
+					opakuj = false;
+					if (čít.endsWith("v") || čít.endsWith("a"))
+					{
+						ibaJedna = false;
+						čít = čít.substring(0, čít.length() - 1);
+						opakuj = true;
+					}
+					else if (čít.endsWith("+"))
+					{
+						pridaj = true;
+						čít = čít.substring(0, čít.length() - 1);
+						opakuj = true;
+					}
+					else if (čít.endsWith("-"))
+					{
+						pridaj = false;
+						čít = čít.substring(0, čít.length() - 1);
+						opakuj = true;
+					}
+				}
+			}
+
+			switch (čít)
+			{
+			case "d":
+				plošina.máDelo = pridaj;
+				break;
+
+			case "l":
+				nováLoptička();
+				break;
+
+			case "p":
+				for (Loptička loptička : loptičky)
+				{
+					loptička.penetračná(pridaj);
+					if (ibaJedna) break;
+				}
+				break;
+
+			case "s":
+				for (Loptička loptička : loptičky)
+				{
+					loptička.skočNaMyš();
+					if (ibaJedna) break;
+				}
+				break;
+
+			case "o":
+				for (Loptička loptička : loptičky)
+				{
+					loptička.otočNaMyš();
+					if (ibaJedna) break;
+				}
+				break;
+			}
+		}
+		spustiČasovač();
+	}
+
+	@Override public void zmenaVeľkostiOkna()
+	{
+		if (Svet.zobrazený())
+		{
+			mierka = Math.min(viditeľnáŠírka() / šš, viditeľnáVýška() / vv);
+			vymažGrafiku(); vyplňObdĺžnik(x2 * mierka, y2 * mierka);
 		}
 	}
 
@@ -111,22 +197,7 @@ public class Ballbreaker extends GRobot
 	@Override public void klik()
 	{
 		// TESTY
-		if (tlačidloMyši(ĽAVÉ))
-		{
-			for (Loptička loptička : loptičky)
-			{
-				loptička.skočNaMyš();
-				break;
-			}
-		}
-		else
-		{
-			for (Loptička loptička : loptičky)
-			{
-				loptička.otočNaMyš();
-				break;
-			}
-		}
+		if (tlačidloMyši(ĽAVÉ)) čít();
 	}
 
 	@Override public void stlačenieKlávesu()
@@ -135,6 +206,7 @@ public class Ballbreaker extends GRobot
 		{
 		case VĽAVO: plošina.zrýchleniePosunu(-2.5); break;
 		case VPRAVO: plošina.zrýchleniePosunu(2.5); break;
+		case ENTER: čít(); break;
 		}
 	}
 
@@ -145,11 +217,11 @@ public class Ballbreaker extends GRobot
 		case VĽAVO: case VPRAVO:
 			plošina.zrýchleniePosunu(0);
 			plošina.rýchlosťPosunu(0); break;
+
 		case MEDZERA:
+			if (plošina.máDelo)
 			{
-				Loptička loptička = nováLoptička();
-				if (klávesnica().isShiftDown())
-					loptička.penetračná(true);
+				// TODO
 			}
 			break;
 		}
@@ -237,7 +309,12 @@ public class Ballbreaker extends GRobot
 				loptičky.odober(loptička);
 				--i;
 			}
-			else loptička.poslednýSmer = loptička.smer();
+			else
+			{
+				loptička.poslednýSmer = loptička.smer();
+				loptička.poslednéX = loptička.polohaX();
+				loptička.poslednéY = loptička.polohaY();
+			}
 		}
 
 		if (neboloPrekreslené()) prekresli();
@@ -246,7 +323,11 @@ public class Ballbreaker extends GRobot
 	public void overPenetračnú()
 	{
 		if (null != testovanáLoptička && testovanáLoptička.penetračná())
+		{
 			testovanáLoptička.smer(testovanáLoptička.poslednýSmer);
+			testovanáLoptička.poloha(testovanáLoptička.poslednéX,
+				testovanáLoptička.poslednéY);
+		}
 	}
 
 	public void odchýľLoptičku(double rýchlosťPosunu)
