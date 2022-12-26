@@ -9,6 +9,7 @@ public class Loptička extends GRobot
 
 	public static void reset()
 	{
+		Ballbreaker.loptičky.vymaž();
 		for (Loptička loptička : loptičky)
 			loptička.deaktivuj(false);
 	}
@@ -42,11 +43,12 @@ public class Loptička extends GRobot
 	public double poslednýSmer = 90, poslednéX = 0, poslednéY = 0;
 
 	private boolean penetračná; // (príznak penetračnej loptičky)
+	public int štartuje = 50; // (atribút čakania po zobrazení)
 
 
 	// Súvisiace s inicializáciou…
 
-	public Loptička()
+	private Loptička()
 	{
 		najväčšiaRýchlosť(20);
 		ohranič(
@@ -55,12 +57,14 @@ public class Loptička extends GRobot
 
 		zdvihniPero();
 		vypĺňajTvary();
+		hrúbkaČiary(2);
 		počiatočnéVlastnosti();
 	}
 
 	private void počiatočnéVlastnosti()
 	{
-		rýchlosť(12, false);
+		štartuje = 50;
+		rýchlosť(0, false);
 		veľkosť(8);
 		aktivuj(false);
 		penetračná(false);
@@ -83,7 +87,7 @@ public class Loptička extends GRobot
 		{
 			smer(poslednýSmer);
 			poloha(poslednéX, poslednéY);
-			dopredu();
+			dopredu(rýchlosť());
 		}
 	}
 
@@ -123,9 +127,17 @@ public class Loptička extends GRobot
 
 	@Override public void kresliTvar()
 	{
-		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
+		skočNa(polohaX() * Ballbreaker.mierka,
+			polohaY() * Ballbreaker.mierka);
 		veľkosť(veľkosť() * Ballbreaker.mierka);
 		krúžok();
+
+		if (štartuje > 0)
+		{
+			hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
+			dopredu(veľkosť() * 1.75);
+			nUholník(veľkosť() * 0.25, 3);
+		}
 	}
 
 	@Override public void deaktivácia() { skry(); }

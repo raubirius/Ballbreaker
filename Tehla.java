@@ -15,6 +15,7 @@ public class Tehla extends KolíznyBlok
 
 	public static void reset()
 	{
+		Ballbreaker.tehly.vymaž();
 		for (Tehla tehla : tehly)
 			tehla.deaktivuj(false);
 	}
@@ -46,7 +47,7 @@ public class Tehla extends KolíznyBlok
 
 	// Súvisiace s inicializáciou…
 
-	public Tehla()
+	private Tehla()
 	{
 		vypĺňajTvary();
 
@@ -86,7 +87,7 @@ public class Tehla extends KolíznyBlok
 
 	public void udri()
 	{
-		Ballbreaker.ballbreaker.overPenetračnú();
+		Ballbreaker.overPenetračnú();
 
 		if (úderov > 0)
 		{
@@ -96,10 +97,12 @@ public class Tehla extends KolíznyBlok
 		else
 		{
 			if (náhodnéReálneČíslo() > 0.5)
-				Ballbreaker.ballbreaker.novýBonus(this, dajNáhodnéČíslo(9));
+				Ballbreaker.novýBonus(this, dajNáhodnéČíslo(9));
 
 			Ballbreaker.tehly.odober(this);
 			deaktivuj(false);
+
+			Efekt.vytvorEfekt(this);
 		}
 	}
 

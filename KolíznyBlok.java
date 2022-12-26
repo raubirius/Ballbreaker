@@ -144,7 +144,8 @@ public class KolíznyBlok extends GRobot
 	{
 		zaoblenie(zaoblenieX() * Ballbreaker.mierka,
 			zaoblenieY() * Ballbreaker.mierka);
-		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
+		skočNa(polohaX() * Ballbreaker.mierka,
+			polohaY() * Ballbreaker.mierka);
 		veľkosť(veľkosť() * Ballbreaker.mierka);
 		obdĺžnik();
 	}

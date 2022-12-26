@@ -9,6 +9,7 @@ public class Strela extends GRobot
 
 	public static void reset()
 	{
+		Ballbreaker.strely.vymaž();
 		for (Strela strela : strely)
 			strela.deaktivuj(false);
 	}
@@ -32,7 +33,7 @@ public class Strela extends GRobot
 
 	// Súvisiace s inicializáciou…
 
-	public Strela()
+	private Strela()
 	{
 		veľkosť(16);
 		ohranič(
@@ -52,12 +53,13 @@ public class Strela extends GRobot
 
 	@Override public void mimoHraníc()
 	{
-		Ballbreaker.ballbreaker.deaktivujStrelu(this);
+		Ballbreaker.deaktivujStrelu(this);
 	}
 
 	@Override public void kresliTvar()
 	{
-		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
+		skočNa(polohaX() * Ballbreaker.mierka,
+			polohaY() * Ballbreaker.mierka);
 		hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
 		vzad(veľkosť() * Ballbreaker.mierka);
 	}

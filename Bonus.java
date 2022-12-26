@@ -9,6 +9,7 @@ public class Bonus extends GRobot
 
 	public static void reset()
 	{
+		Ballbreaker.bonusy.vymaž();
 		for (Bonus bonus : bonusy)
 			bonus.deaktivuj(false);
 	}
@@ -40,8 +41,8 @@ public class Bonus extends GRobot
 
 		if (n >= 0)
 		{
-			bonus.akcia = Ballbreaker.ballbreaker.akcieBonusov[
-				n % Ballbreaker.ballbreaker.akcieBonusov.length];
+			bonus.akcia = Ballbreaker.akcieBonusov[
+				n % Ballbreaker.akcieBonusov.length];
 			bonus.kresli = bonus.kreslenia[n % bonus.kreslenia.length];
 		}
 
@@ -155,7 +156,7 @@ public class Bonus extends GRobot
 	// Vykonanie akcie zobratia:
 	public void akcia() { if (null != akcia) akcia.vykonaj(); }
 
-	public Bonus(Poloha p) // (konštruktor)
+	private Bonus(Poloha p) // (konštruktor)
 	{
 		ohranič(Ballbreaker.šš / 2, Ballbreaker.vv / 2);
 
@@ -172,7 +173,8 @@ public class Bonus extends GRobot
 
 	@Override public void kresliTvar() // (kreslenie s animáciou)
 	{
-		skočNa(polohaX() * Ballbreaker.mierka, polohaY() * Ballbreaker.mierka);
+		skočNa(polohaX() * Ballbreaker.mierka,
+			polohaY() * Ballbreaker.mierka);
 		veľkosť(veľkosť() * Ballbreaker.mierka);
 		hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
 		++animuj;
@@ -187,7 +189,7 @@ public class Bonus extends GRobot
 	// Ostatné…
 
 	@Override public void mimoHraníc()
-	{ Ballbreaker.ballbreaker.deaktivujBonus(this); }
+	{ Ballbreaker.deaktivujBonus(this); }
 
 	@Override public void deaktivácia() { skry(); }
 	@Override public void aktivácia() { zobraz(); }

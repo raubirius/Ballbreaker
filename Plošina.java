@@ -7,8 +7,7 @@ public class Plošina extends KolíznyBlok
 	public boolean máDelo = false; // (príznak dela)
 
 	// Akcia odchýlenia loptičky podľa rýchlosti posunu plošiny:
-	private Akcia akcia = () -> Ballbreaker.ballbreaker.
-		odchýľLoptičku(rýchlosťPosunu());
+	private Akcia akcia = () -> Ballbreaker.odchýľLoptičku(rýchlosťPosunu());
 
 
 	// Súvisiace s inicializáciou…
@@ -18,6 +17,13 @@ public class Plošina extends KolíznyBlok
 		veľkosť(12);
 		zaoblenie(20);
 		hrúbkaČiary(2);
+		vypĺňajTvary();
+		farba(tmavozelená);
+
+		for (int i = 0; i < 12; ++i)
+			kolíznaÚsečka[i].akcia = akcia;
+
+		najväčšiaRýchlosťPosunu(25);
 	}
 
 	public void reset()
@@ -27,18 +33,10 @@ public class Plošina extends KolíznyBlok
 		skočNa(0, 0);
 		pomer(3.8);
 
-		vypĺňajTvary();
-		farba(tmavozelená);
-
 		ohranič((Ballbreaker.šš - šírka()) / 2,
 			(Ballbreaker.vv - výška()) / 2, PLOT);
 
-		for (int i = 0; i < 12; ++i)
-			kolíznaÚsečka[i].akcia = akcia;
-
 		skočNa(0, Ballbreaker.y1 + 1.4 * veľkosť());
-		najväčšiaRýchlosťPosunu(25);
-		aktivuj(false);
 	}
 
 
