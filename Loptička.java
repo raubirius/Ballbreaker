@@ -19,7 +19,7 @@ public class Loptička extends GRobot
 		{
 			if (loptička.pasívny())
 			{
-				loptička.aktivuj(false);
+				loptička.počiatočnéVlastnosti();
 				return loptička;
 			}
 		}
@@ -37,15 +37,36 @@ public class Loptička extends GRobot
 	// kolízií.
 	public final Zoznam<KolíznaÚsečka> zoznamKolíznychÚsečiek = new Zoznam<>();
 
+	public double poslednýSmer = 90;
+
+	private boolean penetračná;
+
 	public Loptička()
 	{
-		veľkosť(8);
-		ohranič();
+		najväčšiaRýchlosť(20);
+		ohranič(
+			(Ballbreaker.šš + najväčšiaRýchlosť()) / 2,
+			(Ballbreaker.vv + najväčšiaRýchlosť()) / 2);
 
 		zdvihniPero();
-		najväčšiaRýchlosť(20);
-		rýchlosť(8, false);
+		vypĺňajTvary();
+		počiatočnéVlastnosti();
+	}
+
+	private void počiatočnéVlastnosti()
+	{
+		rýchlosť(12, false);
+		veľkosť(8);
 		aktivuj(false);
+		penetračná(false);
+	}
+
+	public boolean penetračná() { return penetračná; }
+
+	public void penetračná(boolean penetračná)
+	{
+		this.penetračná = penetračná;
+		farba(penetračná ? tmavotyrkysová : tmavožltá);
 	}
 
 	public void pripravKolíziu()
@@ -53,11 +74,7 @@ public class Loptička extends GRobot
 		zoznamKolíznychÚsečiek.vymaž();
 	}
 
-	@Override public void kresliTvar()
-	{
-		krúžok();
-	}
-
+	@Override public void kresliTvar() { krúžok(); }
 	@Override public void deaktivácia() { skry(); }
 	@Override public void aktivácia() { zobraz(); }
 }

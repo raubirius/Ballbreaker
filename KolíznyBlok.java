@@ -140,11 +140,7 @@ public class KolíznyBlok extends GRobot
 	}
 
 
-	@Override public void kresliTvar()
-	{
-		obdĺžnik();
-	}
-
+	@Override public void kresliTvar() { obdĺžnik(); }
 	@Override public void deaktivácia() { skry(); }
 	@Override public void aktivácia() { zobraz(); }
 }
