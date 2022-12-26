@@ -52,6 +52,11 @@ public class Loptička extends GRobot
 		aktivuj(false);
 	}
 
+	public void pripravKolíziu()
+	{
+		zoznamKolíznychÚsečiek.vymaž();
+	}
+
 	@Override public void kresliTvar()
 	{
 		krúžok();

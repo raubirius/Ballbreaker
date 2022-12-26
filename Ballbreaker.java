@@ -101,12 +101,14 @@ public class Ballbreaker extends GRobot
 			{
 				opakuj = false;
 
-				loptička.zoznamKolíznychÚsečiek.vymaž();
+				loptička.pripravKolíziu();
 
-				loptička.zoznamKolíznychÚsečiek.pridaj(kú1);
-				loptička.zoznamKolíznychÚsečiek.pridaj(kú2);
-				loptička.zoznamKolíznychÚsečiek.pridaj(kú3);
-				loptička.zoznamKolíznychÚsečiek.pridaj(kú4);
+				// loptička.zoznamKolíznychÚsečiek.pridaj(kú1); // nope
+				// …
+				kú1.pripravKolíziu(loptička);
+				kú2.pripravKolíziu(loptička);
+				kú3.pripravKolíziu(loptička);
+				kú4.pripravKolíziu(loptička);
 
 				for (Tehla tehla : tehly)
 					tehla.pripravKolíziu(loptička);
