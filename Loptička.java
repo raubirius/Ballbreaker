@@ -39,7 +39,7 @@ public class Loptička extends GRobot
 
 	public Loptička()
 	{
-		veľkosť(18);
+		veľkosť(8);
 		ohranič();
 
 		zdvihniPero();
@@ -57,4 +57,7 @@ public class Loptička extends GRobot
 	{
 		krúžok();
 	}
+
+	@Override public void deaktivácia() { skry(); }
+	@Override public void aktivácia() { zobraz(); }
 }

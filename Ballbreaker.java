@@ -1,12 +1,16 @@
 
 import java.util.Collections;
 import knižnica.*;
+import static knižnica.Kláves.*;
 import static knižnica.Svet.*;
+import static knižnica.ÚdajeUdalostí.*;
 
 public class Ballbreaker extends GRobot
 {
-	private final Zoznam<Tehla> tehly = new Zoznam<>();
+	public final static Zoznam<Tehla> tehly = new Zoznam<>();
+
 	private final Zoznam<Loptička> loptičky = new Zoznam<>();
+	private final Plošina plošina = new Plošina();
 
 	// Okraje obrazovky:
 	private double x1, x2, y1, y2;
@@ -18,8 +22,20 @@ public class Ballbreaker extends GRobot
 		kú3 = new KolíznaÚsečka(new Bod(), new Bod()),
 		kú4 = new KolíznaÚsečka(new Bod(), new Bod());
 
-	// TEST
-	// private KolíznaAkcia ka = () -> pípni(); { kú4.akcia = ka; }
+	// Do tohto atribútu sa počas testovania kolízií vždy uloží aktuálne
+	// testovaná loptička. Je to využité hlavne v kolíznej úsečke spodného
+	// okraja.
+	private Loptička testovanáLoptička = null;
+
+	// Akcia spodného okraja – deaktivuje loptičku, ktorá je uložená v atribúte
+	// testovanáLoptička:
+	private KolíznaAkcia spodnýOkraj = () ->
+	{
+		if (null != testovanáLoptička)
+			testovanáLoptička.deaktivuj(false);
+	};{
+		kú4.akcia = spodnýOkraj;
+	}
 
 	private Ballbreaker()
 	{
@@ -42,6 +58,8 @@ public class Ballbreaker extends GRobot
 
 	public void reset()
 	{
+		plošina.reset();
+
 		Loptička.reset();
 		loptičky.vymaž();
 		for (int i = 0; i < 3; ++i)
@@ -71,7 +89,7 @@ public class Ballbreaker extends GRobot
 	@Override public void klik()
 	{
 		// TESTY
-		if (ÚdajeUdalostí.tlačidloMyši(ĽAVÉ))
+		if (tlačidloMyši(ĽAVÉ))
 		{
 			for (Loptička loptička : loptičky)
 			{
@@ -89,11 +107,29 @@ public class Ballbreaker extends GRobot
 		}
 	}
 
+	@Override public void stlačenieKlávesu()
+	{
+		switch (kláves())
+		{
+		case VĽAVO: plošina.rýchlosťPosunu(-15); break;
+		case VPRAVO: plošina.rýchlosťPosunu(15); break;
+		}
+	}
+
+	@Override public void uvoľnenieKlávesu()
+	{
+		switch (kláves())
+		{
+		case VĽAVO: case VPRAVO: plošina.rýchlosťPosunu(0); break;
+		}
+	}
+
 	@Override public void tik()
 	{
-		for (Loptička loptička : loptičky)
+		for (int i = 0; i < loptičky.veľkosť(); ++i)
 		{
-			double v = loptička.veľkosť();
+			testovanáLoptička = loptičky.daj(i);
+			double v = testovanáLoptička.veľkosť();
 
 			// Výpočet súradníc, ktoré sú považované za vnútrajšok plochy pre
 			// túto loptičku – využíva sa to nielen na prípravu úsečiek, ale
@@ -118,36 +154,39 @@ public class Ballbreaker extends GRobot
 
 			boolean opakuj = true;
 
-			for (int i = 0; opakuj && i < 1000; ++i)
+			for (int j = 0; opakuj && testovanáLoptička.aktívny() &&
+				j < 1000; ++j)
 			{
 				opakuj = false;
 
-				loptička.pripravKolíziu();
-				double lx = loptička.poslednáPolohaX();
-				double ly = loptička.poslednáPolohaY();
+				testovanáLoptička.pripravKolíziu();
+				double lx = testovanáLoptička.poslednáPolohaX();
+				double ly = testovanáLoptička.poslednáPolohaY();
 
 				// Tie to hranice sú do detekcie pridané len v prípade,
 				// že je loptička v ich vnútri:
 				if (lx >= x1v && lx <= x2v && ly >= y1v && ly <= y2v)
 				{
-					loptička.farba(čierna);
-					kú1.pripravKolíziu(loptička);
-					kú2.pripravKolíziu(loptička);
-					kú3.pripravKolíziu(loptička);
-					kú4.pripravKolíziu(loptička);
+					// testovanáLoptička.farba(čierna); // TEST
+					kú1.pripravKolíziu(testovanáLoptička);
+					kú2.pripravKolíziu(testovanáLoptička);
+					kú3.pripravKolíziu(testovanáLoptička);
+					kú4.pripravKolíziu(testovanáLoptička);
 				}
-				else loptička.farba(červená);
+				// else testovanáLoptička.farba(červená); // TEST
+
+				plošina.pripravKolíziu(testovanáLoptička);
 
 				for (Tehla tehla : tehly)
-					tehla.pripravKolíziu(loptička);
+					tehla.pripravKolíziu(testovanáLoptička);
 
 				// Triedenie kolíznych úsečiek podľa vzdialenosti – pozri aj
 				// KolíznaÚsečka.compareTo:
-				Collections.sort(loptička.zoznamKolíznychÚsečiek);
+				Collections.sort(testovanáLoptička.zoznamKolíznychÚsečiek);
 
 				for (KolíznaÚsečka kolíznaÚsečka :
-					loptička.zoznamKolíznychÚsečiek)
-					if (kolíznaÚsečka.spracujKolíziu(loptička))
+					testovanáLoptička.zoznamKolíznychÚsečiek)
+					if (kolíznaÚsečka.spracujKolíziu(testovanáLoptička))
 					{
 						opakuj = true;
 						break;
@@ -155,8 +194,18 @@ public class Ballbreaker extends GRobot
 			}
 
 			// DEBUG:
-			if (opakuj) System.err.println(
+			if (opakuj && testovanáLoptička.aktívny()) System.err.println(
 				"Prekročený limit hĺbky detekcie kolízií!");
+		}
+
+		for (int i = 0; i < loptičky.veľkosť(); ++i)
+		{
+			Loptička loptička = loptičky.daj(i);
+			if (loptička.neaktívny())
+			{
+				loptičky.odober(loptička);
+				--i;
+			}
 		}
 
 		if (neboloPrekreslené()) prekresli();
