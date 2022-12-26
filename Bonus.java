@@ -65,9 +65,8 @@ public class Bonus extends GRobot
 			farba(zelená); vyplňObdĺžnik();
 			farba(čierna); kresliObdĺžnik();
 
-			odskoč(veľkosť() * Ballbreaker.mierka * 0.5);
-			vyplňElipsu(veľkosť() * Ballbreaker.mierka * 0.5,
-				veľkosť() * Ballbreaker.mierka * 0.25);
+			odskoč(veľkosť() * 0.5);
+			vyplňElipsu(veľkosť() * 0.5, veľkosť() * 0.25);
 		},
 
 		// 1 – zmeň všetky loptičky na penetračné

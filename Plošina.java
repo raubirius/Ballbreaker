@@ -67,9 +67,8 @@ public class Plošina extends KolíznyBlok
 			hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
 			farba(čierna);
 			kresliObdĺžnik();
-			skoč(veľkosť() * Ballbreaker.mierka * 0.5);
-			vyplňElipsu(veľkosť() * Ballbreaker.mierka * 0.5,
-				veľkosť() * Ballbreaker.mierka * 0.25);
+			skoč(veľkosť() * 0.5);
+			vyplňElipsu(veľkosť() * 0.5, veľkosť() * 0.25);
 		}
 	}
 }

@@ -31,7 +31,7 @@ import static knižnica.ÚdajeUdalostí.*;
 // ✓ čakanie loptičky po objavení
 // ✓ efekty (postupné zmiznutie tehly po zničení)
 // • ďalšie bonusy (život, duplikácia jestvujúcich loptičiek)
-// • výhra/prehra
+// ✓ výhra/prehra
 // • levely
 
 public class Ballbreaker extends GRobot
@@ -69,8 +69,8 @@ public class Ballbreaker extends GRobot
 	private static boolean hraJeAktívna;
 
 	// Výpočtové rozmery hracej plochy:
-	public final static double šš = 800; // šírka
-	public final static double vv = 500; // výška
+	public final static double šš = 800; // (šírka)
+	public final static double vv = 500; // (výška)
 
 	// Výpočtové hranice hracej plochy:
 	public final static double x1 =  -šš / 2;      // (najmenšie x)
@@ -108,12 +108,15 @@ public class Ballbreaker extends GRobot
 		super(šírkaZariadenia(), výškaZariadenia());
 		// ballbreaker = this;
 		plošina = new Plošina();
+		hrúbkaČiary(5);
 		veľkosť(5);
 		vrstva(1);
 
 		farbaPozadia(antracitová);
 		farba(tmavomodrá);
 		reset();
+
+		Rozhranie.inicializuj();
 	}
 
 	private static void reset()
@@ -398,7 +401,7 @@ public class Ballbreaker extends GRobot
 		{
 			mierka = Math.min(viditeľnáŠírka() / šš, viditeľnáVýška() / vv);
 			vymažGrafiku(); vyplňObdĺžnik(x2 * mierka, y2 * mierka);
-			písmo("Cambria", 50 * mierka);
+			// písmo("Cambria", 50 * mierka);
 		}
 	}
 
@@ -415,15 +418,23 @@ public class Ballbreaker extends GRobot
 			preskočVpravo(14 * Ballbreaker.mierka);
 		}
 
-		//if (!hraJeAktívna)
+		if (!hraJeAktívna)
 		{
-			// skočNa(stred);
+			mierka(mierka * 5);
+			skočNa(stred);
+			hrúbkaČiary(hrúbkaČiary() * Ballbreaker.mierka);
+
 			if (tehly.jePrázdny())
-				text("👍");
+			// if (0 == (++xxx / 10) % 2) // TEST
+				// text("👍");
+				obkresliOblasť(Rozhranie.úspech);
 			else
-				text("👎");
+				// text("👎");
+				obkresliOblasť(Rozhranie.neúspech);
 		}
 	}
+
+	// private static int xxx = 0; // TEST
 
 	@Override public void klik()
 	{
