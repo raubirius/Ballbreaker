@@ -3,15 +3,42 @@ import knižnica.*;
 
 public class Loptička extends GRobot
 {
-	public final Zoznam<KolíznaÚsečka> zkú = new Zoznam<>();
+	private final static Zoznam<Loptička> loptičky = new Zoznam<>();
+
+	public static void reset()
+	{
+		for (Loptička loptička : loptičky)
+			loptička.deaktivuj(false);
+	}
+
+	public static Loptička dajLoptičku()
+	{
+		for (Loptička loptička : loptičky)
+		{
+			if (loptička.pasívny())
+			{
+				loptička.aktivuj(false);
+				return loptička;
+			}
+		}
+
+		Loptička loptička = new Loptička();
+		loptičky.pridaj(loptička);
+		return loptička;
+	}
+
+
+	public final Zoznam<KolíznaÚsečka> zoznamKolíznychÚsečiek = new Zoznam<>();
 
 	public Loptička()
 	{
 		veľkosť(18);
 
+		ohranič();
+
 		// Toto bolo upravené, aby to spolupracovalo s metódou mimoHraníc:
-		ohranič(Svet.šírka() / 2 - veľkosť(),
-			Svet.výška() / 2 - veľkosť(), ODRAZ);
+		/*ohranič(Svet.šírka() / 2 - veľkosť(),
+			Svet.výška() / 2 - veľkosť(), ODRAZ); */
 
 		// Poznámka: Spoľahlivejšie by bolo, keby aj kolízie so stenami sveta
 		// (hracieho plátna) boli implementované prostredníctvom kolíznych
@@ -32,12 +59,12 @@ public class Loptička extends GRobot
 
 	// Táto metóda bola prevzatá z dokumentácie
 	// (http://localhost/horvath/GRobot/GRobot#mimoHran%C3%ADc-Bod:A-double-):
-	@Override public boolean mimoHraníc(Bod[] poleBodov, double uhol)
+	/* @Override public boolean mimoHraníc(Bod[] poleBodov, double uhol)
 	{
 		Bod priesečník = Svet.priesečníkÚsečiek(poleBodov[0],
 			poloha(), poleBodov[2], poleBodov[3]);
 		if (null != priesečník)
 			smer(Svet.smer(priesečník, poleBodov[1]));
 		return true;
-	}
+	} */
 }

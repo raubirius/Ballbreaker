@@ -3,56 +3,57 @@ import java.util.Collections;
 import knižnica.*;
 import static knižnica.Svet.*;
 
-// Poznámka: V tejto verzii je opravený mechanizmus kolízií. Riešenie je
-// „roztrúsené“ vo viacerých triedach a je označené značkou [*kú*].
-
 public class Ballbreaker extends GRobot
 {
-	private Tehla tehla1 = new Tehla();
-	private Tehla tehla2 = new Tehla();
-	private Tehla tehla3 = new Tehla();
-	private Loptička loptička = new Loptička();
+	private final Zoznam<Tehla> tehly = new Zoznam<>();
+	private final Zoznam<Loptička> loptičky = new Zoznam<>();
+
+	// Okraje obrazovky:
+	private double x1, x2, y1, y2;
+
+	// Kolízne úsečky okrajov obrazovky:
+	private final KolíznaÚsečka
+		kú1 = new KolíznaÚsečka(new Bod(), new Bod()),
+		kú2 = new KolíznaÚsečka(new Bod(), new Bod()),
+		kú3 = new KolíznaÚsečka(new Bod(), new Bod()),
+		kú4 = new KolíznaÚsečka(new Bod(), new Bod());
+
+	// TEST
+	// private KolíznaAkcia ka = () -> pípni(); { kú4.akcia = ka; }
 
 	private Ballbreaker()
 	{
-		super(300, 400);
+		super(500, 400);
 
-		// (Zmena vlastností loptičky bola presunutá do konštruktora loptičky.)
+		x1 = najmenšieX();
+		x2 = najväčšieX();
+		y1 = najmenšieY();
+		y2 = najväčšieY();
 
-		// Ide o náhodu, ale v tejto konfigurácii sa do 30 sekúnd prejaví
-		// očakávaný bug, keď loptička vletí do a vyletí z vnútra tehly:
-		/*
-		tehla.skoč(100);
-		tehla.vpravo(20);
-		*/
+		reset();
+	}
 
-		/*
-		// Testy:
-		loptička.skočNa(-91.79, 83.13);
-		loptička.smer(50);
-
-		for (int i = 0; i < 5; ++i)
+	public void reset()
+	{
+		Loptička.reset();
+		loptičky.vymaž();
+		for (int i = 0; i < 1; ++i)
 		{
-			loptička.vzad(1);
-			vypíšRiadok(
-				"x: ", loptička.polohaX(), riadok,
-				"y: ", loptička.polohaY(), riadok);
+			Loptička loptička = Loptička.dajLoptičku();
+			loptička.skočNa(stred);
+			loptička.odskoč();
+			loptička.smer(náhodnéCeléČíslo(260, 280));
+			loptičky.pridaj(loptička);
 		}
-		*/
 
-		// V tejto konfigurácii sa to prejaví okamžite (ale teraz už sa to
-		// neprejaví, keďže to bolo opravené):
-		loptička.skočNa(-92, 83);
-		loptička.smer(50);
-
-		tehla1.skočNa(0, 100);
-		tehla1.smer(70);
-
-		tehla2.skočNa(-50, 0);
-		tehla2.smer(45);
-
-		tehla3.skočNa(0, -100);
-		tehla3.smer(-70);
+		Tehla.reset();
+		tehly.vymaž();
+		for (int i = 0; i < 5; i += 1)
+		{
+			Tehla tehla = Tehla.dajTehlu();
+			tehla.skočNa(-170 + i * 85, 140);
+			tehly.pridaj(tehla);
+		}
 	}
 
 	@Override public void kresliTvar()
@@ -61,64 +62,70 @@ public class Ballbreaker extends GRobot
 
 	@Override public void klik()
 	{
-		// TESTY (vypnuté – zistenie aktuálnej polohy a orientácie, aby sme
-		// 	objekty dostali rýchlejšie do konfigurácie, v ktorej sa prejaví
-		// 	„bug“ vojdenia lopty do tehly):
-		// if (ÚdajeUdalostí.tlačidloMyši(ĽAVÉ))
-		// {
-		// 	vypíšRiadok(
-		// 		"Lopta:", riadok,
-		// 			"  x: ", loptička.polohaX(), riadok,
-		// 			"  y: ", loptička.polohaY(), riadok,
-		// 			"  s: ", loptička.smer(), riadok,
-		// 		"Tehla:", riadok,
-		// 			"  x: ", tehla.polohaX(), riadok,
-		// 			"  y: ", tehla.polohaY(), riadok,
-		// 			"  s: ", tehla.smer());
-		// 
-		// 	/*tehla.skoč(náhodnéCeléČíslo(-5, 5), náhodnéCeléČíslo(-5, 5));
-		// 	tehla.vľavo(náhodnéCeléČíslo(-5, 5));
-		// 	tehla.spracujKolíziu(loptička);
-		// 	žiadajPrekreslenie();*/
-		// }
-		// else
-		// {
-		// 	vymažTexty();
-		// 	// loptička.otočNaMyš();
-		// }
+		// TESTY
+		if (ÚdajeUdalostí.tlačidloMyši(ĽAVÉ))
+		{
+			// (prázdne)
+		}
+		else
+		{
+			for (Loptička loptička : loptičky)
+			{
+				loptička.otočNaMyš();
+				break;
+			}
+		}
 	}
-
-	// TESTY (vypnuté – výpis stavu zásobníka kolíznych úsečiek pred a po
-	// 	prvom zotriedení – aby sme overili, či triedenie funguje správne; prvý
-	// 	test – zoradenie od najvzdialenejšej po najbližšiu ukázal, že toto
-	// 	zoradenie bug nerieši; druhý test – zoradenie od najbližšej po
-	// 	najvzdialenejšiu odstránil „bug“ prinajmenšom v tej konfigurácii,
-	// 	ktorú sme mali pripravenú, ale na dokonalé overenie to chce viac
-	// 	tehiel, viac loptičiek a dlhšie testovanie…):
-	// 	
-	// private boolean bbb = true;
 
 	@Override public void tik()
 	{
-		loptička.zkú.vymaž();
-		tehla1.spracujKolíziu(loptička);
-		tehla2.spracujKolíziu(loptička);
-		tehla3.spracujKolíziu(loptička);
+		for (Loptička loptička : loptičky)
+		{
+			double v = loptička.veľkosť();
 
-		// TESTY:
-		// boolean aaa = bbb && !loptička.zkú.isEmpty();
-		// if (aaa) { System.out.println("pred"); for (KolíznaÚsečka kú : loptička.zkú) System.out.println(kú.v); }
+			kú1.b1.poloha(x1 + v, y1);
+			kú1.b2.poloha(x1 + v, y2);
 
-		// [*kú*]
-		// Zotriedenie zoznamu kolízií tejto loptičky:
-		Collections.sort(loptička.zkú);
+			kú2.b1.poloha(x2 - v, y1);
+			kú2.b2.poloha(x2 - v, y2);
 
-		// TESTY:
-		// if (aaa) { System.out.println("\npo"); for (KolíznaÚsečka kú : loptička.zkú) System.out.println(kú.v); bbb = false; }
+			kú3.b1.poloha(x1, y2 - v);
+			kú3.b2.poloha(x2, y2 - v);
 
-		// [*kú*]
-		// Detekcia kolízií:
-		for (KolíznaÚsečka kú : loptička.zkú) kú.spracujKolíziu(loptička);
+			kú4.b1.poloha(x1, y1 + v);
+			kú4.b2.poloha(x2, y1 + v);
+
+			boolean opakuj = true;
+
+			for (int i = 0; opakuj && i < 1000; ++i)
+			{
+				opakuj = false;
+
+				loptička.zoznamKolíznychÚsečiek.vymaž();
+
+				loptička.zoznamKolíznychÚsečiek.pridaj(kú1);
+				loptička.zoznamKolíznychÚsečiek.pridaj(kú2);
+				loptička.zoznamKolíznychÚsečiek.pridaj(kú3);
+				loptička.zoznamKolíznychÚsečiek.pridaj(kú4);
+
+				for (Tehla tehla : tehly)
+					tehla.pripravKolíziu(loptička);
+
+				Collections.sort(loptička.zoznamKolíznychÚsečiek);
+
+				for (KolíznaÚsečka kolíznaÚsečka :
+					loptička.zoznamKolíznychÚsečiek)
+					if (kolíznaÚsečka.spracujKolíziu(loptička))
+					{
+						opakuj = true;
+						break;
+					}
+			}
+
+			// DEBUG:
+			if (opakuj) System.err.println(
+				"Prekročený limit hĺbky detekcie kolízií!");
+		}
 
 		if (neboloPrekreslené()) prekresli();
 	}

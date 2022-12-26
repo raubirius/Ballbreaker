@@ -2,14 +2,15 @@
 import knižnica.*;
 import static knižnica.Svet.*;
 
-// [*kú*]
-// Teraz táto trieda implementuje rozhranie Comparable, ktoré umožňuje použiť
+// Táto trieda implementuje rozhranie Comparable, ktoré umožňuje použiť
 // metódu Collections.sort na rýchle zotriedenie zoznamu kolíznych úsečiek.
 
 public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 {
 	public Bod b1, b2;
-	private double v = 0;
+	public KolíznaAkcia akcia = null;
+
+	private double vzdialenosť = 0;
 
 	public KolíznaÚsečka(double x1, double y1,
 		double x2, double y2)
@@ -29,16 +30,11 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 		b1 = b2 = null;
 	}
 
-	// [*kú*]
-	// Táto metóda je nová a jej cieľom pripraviť „pôdu“ na detektciu kolízií:
-	// Atribút v si bude pamätať aktuálnu vzdialenosť loptičky od tejto
-	// kolíznej úsečky, čo bude použité na zotriedenie zoznamu kolíznych
-	// úsečiek.
 
 	public void pripravKolíziu(Loptička l)
 	{
-		v = vzdialenosťBoduOdÚsečky(l, b1, b2);
-		l.zkú.pridaj(this);
+		vzdialenosť = vzdialenosťBoduOdÚsečky(l, b1, b2);
+		l.zoznamKolíznychÚsečiek.pridaj(this);
 	}
 
 	public boolean spracujKolíziu(Loptička l)
@@ -49,21 +45,29 @@ public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 		if (null != x1)
 		{
 			Bod x2 = najbližšíBodNaPriamke(r2, b1, b2);
-			double vv = 2 * l.vzdialenosťK(x2);
-			l.otočNa(x2); l.skoč(vv);
+			double v2 = 2 * l.vzdialenosťK(x2);
+			l.otočNa(x2); l.skoč(v2);
 			l.otočNa(x1); l.vľavo(180);
+
+			x2 = l.poloha();
+			l.skočNa(x1);
+			l.dopredu(3);
+			l.skočNa(x2);
+
+			if (null != akcia) akcia.vykonaj();
 			return true;
 		}
 		return false;
 	}
 
-	// [*kú*]
-	// Toto je implementácia rozhrania Comparable. Porovnáva vzdialenosti
-	// úsečiek od loptičky, čo je použité na zotriedenie zoznamu pred jeho
-	// vyhodnotením…
+
+	// Implementácia rozhrania Comparable. Porovnáva vzdialenosti úsečiek od
+	// poslednej loptičky, ktorá použila metódu Tehla.pripravKolíziu.
+	// Vzdialenosť je potom použitá na zotriedenie zoznamu pred jeho
+	// vyhodnotením.
 
 	public int compareTo(KolíznaÚsečka iná)
 	{
-		return (int)(100 * (v - iná.v));
+		return (int)(100 * (vzdialenosť - iná.vzdialenosť));
 	}
 }

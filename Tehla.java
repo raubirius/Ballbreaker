@@ -3,134 +3,149 @@ import knižnica.*;
 
 public class Tehla extends GRobot
 {
-	// Zmena: Body aj kolízne úsečky vytvoríme vopred a prepojíme ich tak,
-	// aby sme na nich vzájomnej prepojenosti už nemuseli nič meniť.
-	// 
-	// Body sa nezmenia, len budú vytvorené vopred a preto nebudeme pri
-	// určovaní ich polôh vytvárať nové, ale ich len presunieme na nové
-	// pozície metódou poloha.
-	// 
-	// Kolízne úsečky budú obsahovať body presne v tom poradí ako boli, len
-	// ich bude 12 a budú prepojené so svojimi bodmi vopred a natrvalo.
+	private final static Zoznam<Tehla> tehly = new Zoznam<>();
 
-	private final Bod[] kb = new Bod[12]; // kb – kolízny bod
-	private final KolíznaÚsečka[] kú = new KolíznaÚsečka[12];
+	public static void reset()
+	{
+		for (Tehla tehla : tehly)
+			tehla.deaktivuj(false);
+	}
+
+	public static Tehla dajTehlu()
+	{
+		for (Tehla tehla : tehly)
+		{
+			if (tehla.pasívny())
+			{
+				tehla.aktivuj(false);
+				return tehla;
+			}
+		}
+
+		Tehla tehla = new Tehla();
+		tehly.pridaj(tehla);
+		return tehla;
+	}
+
+
+	// Body aj kolízne úsečky sú vytvorené vopred a sú prepojené tak,
+	// aby sa ľahko používali na detekciu kolízií. (Kolízne úsečky obsahujú
+	// odkazy na body zoradené presne v tom poradí ako sú v poli kolíznyBod.)
+
+	private final Bod[] kolíznyBod = new Bod[12];
+	private final KolíznaÚsečka[] kolíznaÚsečka = new KolíznaÚsečka[12];
 
 	public Tehla()
 	{
 		veľkosť(20);
 		pomer(2);
 
-		for (int i = 0; i < 12; ++i) kb[i] = new Bod();
+		for (int i = 0; i < 12; ++i) kolíznyBod[i] = new Bod();
 
 		for (int i = 0; i < 12; ++i)
-			kú[i] = new KolíznaÚsečka(kb[i], kb[(i + 1) % 12]);
+			kolíznaÚsečka[i] = new KolíznaÚsečka(
+				kolíznyBod[i], kolíznyBod[(i + 1) % 12]);
+
+		aktivuj(false);
 	}
 
 	public boolean jeVKolíznejZóne(Loptička l)
 	{
-		// Tu boli všetky inštancie bodov nahradené primitívnymi hodnotami
-		// double. Je to efektívnejšie…
-
 		double p1x = l.polohaX();
 		double p1y = l.polohaY();
 		double p2x = l.poslednáPolohaX();
 		double p2y = l.poslednáPolohaY();
 
-		double v = l.veľkosť() + l.najväčšiaRýchlosť() +
+		double veľkosť = l.veľkosť() + l.najväčšiaRýchlosť() +
 			(výška() > šírka() ? výška() : šírka()) / 2;
 
-		double p3x = polohaX() - v;
-		double p3y = polohaY() - v;
-		double p4x = polohaX() + v;
-		double p4y = polohaY() + v;
+		double p3x = polohaX() - veľkosť;
+		double p3y = polohaY() - veľkosť;
+		double p4x = polohaX() + veľkosť;
+		double p4y = polohaY() + veľkosť;
 
-		// Podmienky boli prepísané do jedného výrazu:
 		return
 			(p1x >= p3x && p1x <= p4x && p1y >= p3y && p1y <= p4y) ||
 			(p2x >= p3x && p2x <= p4x && p2y >= p3y && p2y <= p4y);
 	}
 
-	// TEST (aktívny – kresli tučnou čiarou tie tehly, ktoré sú v kolíznej
-	// 	zóne loptičky):
-	private boolean bvkz = false; // (bol v kolíznej zóne)
 
-	public void spracujKolíziu(Loptička l)
+	// TEST
+	// (Kreslí tučnou čiarou tie tehly, ktoré sú v kolíznej zóne loptičky.)
+	private boolean bvkz = false; // (bkvz – bol v kolíznej zóne)
+
+	public void pripravKolíziu(Loptička l)
 	{
-		// Nové: Spracujú sa len tie kolízie, ktoré sú v rámci kolíznej zóny:
+		// Spracujú sa len tie kolízie, ktoré sú v rámci kolíznej zóny:
 		// if (!jeVKolíznejZóne(l)) return;
 		if (!(bvkz = jeVKolíznejZóne(l))) return; // TEST
 
-		double v = l.veľkosť();
-		double šš = šírka() / 2;
-		double vv = výška() / 2;
-		double s = smer();
 
-		// Do poľa kb teraz už nesmieme priraďovať nové body. Namiesto toho
-		// budeme meniť polohy jestvujúcich prvkov (bodov) poľa kb:
+		double veľkosť = l.veľkosť();
+		double šírka = šírka() / 2;
+		double výška = výška() / 2;
+		double smer = smer();
 
-		kb[1].poloha(this);
-		kb[1].posuňVSmere(s, vv + v);
-		kb[2].poloha(kb[1]);
-
-		kb[1].posuňVSmere(s + 90, šš);
-		kb[2].posuňVSmere(s - 90, šš);
+		// Optimalizácia (často vyskytujúce sa výpočty):
+		double smer1 = smer + 90;
+		double smer2 = smer - 90;
 
 
-		kb[8].poloha(this);
-		kb[8].posuňVSmere(s + 180, vv + v);
-		kb[7].poloha(kb[8]);
+		kolíznyBod[1].poloha(this);
+		kolíznyBod[1].posuňVSmere(smer, výška + veľkosť);
+		kolíznyBod[2].poloha(kolíznyBod[1]);
 
-		kb[8].posuňVSmere(s + 90, šš);
-		kb[7].posuňVSmere(s - 90, šš);
-
-
-		kb[4].poloha(this);
-		kb[4].posuňVSmere(s - 90, šš + v);
-		kb[5].poloha(kb[4]);
-
-		kb[4].posuňVSmere(s, vv);
-		kb[5].posuňVSmere(s, -vv);
+		kolíznyBod[1].posuňVSmere(smer1, šírka);
+		kolíznyBod[2].posuňVSmere(smer2, šírka);
 
 
-		kb[11].poloha(this);
-		kb[11].posuňVSmere(s + 90, šš + v);
-		kb[10].poloha(kb[11]);
+		kolíznyBod[8].poloha(this);
+		kolíznyBod[8].posuňVSmere(smer + 180, výška + veľkosť);
+		kolíznyBod[7].poloha(kolíznyBod[8]);
 
-		kb[11].posuňVSmere(s, vv);
-		kb[10].posuňVSmere(s, -vv);
-
-
-		kb[0].poloha(this);
-		kb[0].posuňVSmere(s, vv);
-		kb[3].poloha(kb[0]);
-
-		kb[0].posuňVSmere(s + 90, šš);
-		kb[3].posuňVSmere(s - 90, šš);
-
-		kb[0].posuňVSmere(s + 45, v);
-		kb[3].posuňVSmere(s - 45, v);
+		kolíznyBod[8].posuňVSmere(smer1, šírka);
+		kolíznyBod[7].posuňVSmere(smer2, šírka);
 
 
-		kb[9].poloha(this);
-		kb[9].posuňVSmere(s, -vv);
-		kb[6].poloha(kb[9]);
+		kolíznyBod[4].poloha(this);
+		kolíznyBod[4].posuňVSmere(smer2, šírka + veľkosť);
+		kolíznyBod[5].poloha(kolíznyBod[4]);
 
-		kb[9].posuňVSmere(s + 90, šš);
-		kb[6].posuňVSmere(s - 90, šš);
-
-		kb[9].posuňVSmere(s + 135, v);
-		kb[6].posuňVSmere(s - 135, v);
+		kolíznyBod[4].posuňVSmere(smer, výška);
+		kolíznyBod[5].posuňVSmere(smer, -výška);
 
 
-		// [*kú*]
-		// Na tomto mieste by bolo spracovanie kolízie predčasné. Najprv
-		// potrebujeme kolízne úsečky zoradiť podľa vzdialenosti, takže tu je
-		// použitá len nová prípravná metóda pripravKolíziu. (Pôvodná,
-		// spracujKolíziu, je vypnutá a použitá v tiku hlavnej triedy.)
+		kolíznyBod[11].poloha(this);
+		kolíznyBod[11].posuňVSmere(smer1, šírka + veľkosť);
+		kolíznyBod[10].poloha(kolíznyBod[11]);
 
-		// for (int i = 0; i < 12; ++i) kú[i].spracujKolíziu(l);
-		for (int i = 0; i < 12; ++i) kú[i].pripravKolíziu(l);
+		kolíznyBod[11].posuňVSmere(smer, výška);
+		kolíznyBod[10].posuňVSmere(smer, -výška);
+
+
+		kolíznyBod[0].poloha(this);
+		kolíznyBod[0].posuňVSmere(smer, výška);
+		kolíznyBod[3].poloha(kolíznyBod[0]);
+
+		kolíznyBod[0].posuňVSmere(smer1, šírka);
+		kolíznyBod[3].posuňVSmere(smer2, šírka);
+
+		kolíznyBod[0].posuňVSmere(smer + 45, veľkosť);
+		kolíznyBod[3].posuňVSmere(smer - 45, veľkosť);
+
+
+		kolíznyBod[9].poloha(this);
+		kolíznyBod[9].posuňVSmere(smer, -výška);
+		kolíznyBod[6].poloha(kolíznyBod[9]);
+
+		kolíznyBod[9].posuňVSmere(smer1, šírka);
+		kolíznyBod[6].posuňVSmere(smer2, šírka);
+
+		kolíznyBod[9].posuňVSmere(smer + 135, veľkosť);
+		kolíznyBod[6].posuňVSmere(smer - 135, veľkosť);
+
+
+		for (int i = 0; i < 12; ++i) kolíznaÚsečka[i].pripravKolíziu(l);
 	}
 
 
