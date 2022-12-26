@@ -2,9 +2,14 @@
 import knižnica.*;
 import static knižnica.Svet.*;
 
-public class KolíznaÚsečka
+// [*kú*]
+// Teraz táto trieda implementuje rozhranie Comparable, ktoré umožňuje použiť
+// metódu Collections.sort na rýchle zotriedenie zoznamu kolíznych úsečiek.
+
+public class KolíznaÚsečka implements Comparable<KolíznaÚsečka>
 {
 	public Bod b1, b2;
+	private double v = 0;
 
 	public KolíznaÚsečka(double x1, double y1,
 		double x2, double y2)
@@ -24,22 +29,41 @@ public class KolíznaÚsečka
 		b1 = b2 = null;
 	}
 
-	// Ladenie:
-	// public Bod r1, r2, x1, x2;
+	// [*kú*]
+	// Táto metóda je nová a jej cieľom pripraviť „pôdu“ na detektciu kolízií:
+	// Atribút v si bude pamätať aktuálnu vzdialenosť loptičky od tejto
+	// kolíznej úsečky, čo bude použité na zotriedenie zoznamu kolíznych
+	// úsečiek.
 
-	public boolean spracujKolíziu(GRobot r)
+	public void pripravKolíziu(Loptička l)
 	{
-		Bod r1 = r.poslednáPoloha();
-		Bod r2 = r.poloha();
+		v = vzdialenosťBoduOdÚsečky(l, b1, b2);
+		l.zkú.pridaj(this);
+	}
+
+	public boolean spracujKolíziu(Loptička l)
+	{
+		Bod r1 = l.poslednáPoloha();
+		Bod r2 = l.poloha();
 		Bod x1 = priesečníkÚsečiek(b1, b2, r1, r2);
 		if (null != x1)
 		{
 			Bod x2 = najbližšíBodNaPriamke(r2, b1, b2);
-			double vv = 2 * r.vzdialenosťK(x2);
-			r.otočNa(x2); r.skoč(vv);
-			r.otočNa(x1); r.vľavo(180);
+			double vv = 2 * l.vzdialenosťK(x2);
+			l.otočNa(x2); l.skoč(vv);
+			l.otočNa(x1); l.vľavo(180);
 			return true;
 		}
 		return false;
+	}
+
+	// [*kú*]
+	// Toto je implementácia rozhrania Comparable. Porovnáva vzdialenosti
+	// úsečiek od loptičky, čo je použité na zotriedenie zoznamu pred jeho
+	// vyhodnotením…
+
+	public int compareTo(KolíznaÚsečka iná)
+	{
+		return (int)(100 * (v - iná.v));
 	}
 }
